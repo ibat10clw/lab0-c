@@ -65,6 +65,19 @@ bool q_insert_head(struct list_head *head, char *s)
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+    element_t *node = (element_t *) malloc(sizeof(element_t));
+    if (!node)
+        return false;
+    unsigned int len = strlen(s) + 1;
+    node->value = (char *) malloc(sizeof(char) * len);
+    if (!node->value) {
+        free(node);
+        return false;
+    }
+    memcpy(node->value, s, len);
+    list_add_tail(&node->list, head);
     return true;
 }
 
@@ -102,7 +115,15 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
  */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head || head->next == head)
+        return NULL;
+    element_t *node = list_last_entry(head, element_t, list);
+    if (sp) {
+        strncpy(sp, node->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+    list_del(head->prev);
+    return node;
 }
 
 /*
