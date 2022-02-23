@@ -26,7 +26,13 @@ struct list_head *q_new()
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *l) {}
+void q_free(struct list_head *l)
+{
+    if (l->next == l) {
+        free(l);
+        return;
+    }
+}
 
 /*
  * Attempt to insert element at head of queue.
@@ -162,6 +168,22 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if (!head || head->next == head)
+        return false;
+    // using fastptr and slowptr to find middle node in list
+    struct list_head *fast = head;
+    struct list_head *slow = head;
+    do {
+        fast = fast->next->next;
+        slow = slow->next;
+    } while (fast->next != head && fast != head);
+    // get the target address
+    element_t *target = list_entry(slow, element_t, list);
+    // remove from list
+    list_del(slow);
+    // delete node
+    free(target->value);
+    free(target);
     return true;
 }
 
