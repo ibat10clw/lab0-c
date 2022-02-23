@@ -37,6 +37,22 @@ void q_free(struct list_head *l) {}
  */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    // if the queue is NULL, return false
+    if (!head)
+        return false;
+    // allocate space for new node, if fail return false
+    element_t *node = (element_t *) malloc(sizeof(element_t));
+    if (!node)
+        return false;
+    // allocate space for copy string, if fail free the node and return false
+    unsigned int len = strlen(s) + 1;
+    node->value = (char *) malloc(sizeof(char) * len);
+    if (!node->value) {
+        free(node);
+        return false;
+    }
+    memcpy(node->value, s, len);
+    list_add(&node->list, head);
     return true;
 }
 
