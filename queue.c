@@ -215,17 +215,26 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
-    /*
-    struct list_head *current = head->next->next, *previous = head->next;
-    while (current != head && previous != head) {
-
-        element_t *c = list_entry(current, element_t, list);
-        element_t *p = list_entry(previous, element_t, list);
-        printf("%s %s\n", p->value, c->value);
-        current = current->prev->next;
-        previous = previous->next->next;
+    // three pointers for help change link
+    struct list_head *current = head->next, *previous = head, *tmp = NULL;
+    while (current != head && current->next != head) {
+        tmp = previous;
+        previous = current;
+        current = current->next;
+        // change link
+        previous->next = current->next;
+        current->next = previous;
+        current->prev = previous->prev;
+        previous->prev = current;
+        tmp->next = current;
+        // move current to next
+        current = previous->next;
     }
-    */
+    // when # nodes is even, change last node's link
+    if (current->next != head) {
+        previous->next = head;
+        head->prev = previous;
+    }
 }
 
 /*
