@@ -266,10 +266,85 @@ void q_reverse(struct list_head *head)
     head->prev = head->next;
     head->next = tmp;
 }
-
+/*
+void print_list(struct list_head *l)
+{
+    while (l != NULL) {
+        printf("%s ", list_entry(l, element_t, list)->value);
+        l = l->next;
+    }
+    printf("\n");
+}
+*/
+struct list_head *merge(struct list_head *l1, struct list_head *l2)
+{
+    struct list_head *head = NULL, **ptr = &head, **node;
+    // sorting on dictionary order
+    for (node = NULL; l1 && l2; *node = (*node)->next) {
+        node = strcmp(list_entry(l1, element_t, list)->value,
+                      list_entry(l2, element_t, list)->value) < 0
+                   ? &l1
+                   : &l2;
+        // printf("%s\n", list_entry(*node, element_t, list)->value);
+        *ptr = *node;
+        ptr = &(*ptr)->next;
+    }
+    *ptr = l1 ? l1 : l2;
+    // print_list(head);
+    return head;
+}
+struct list_head *mergesort(struct list_head *head)
+{
+    if (!head->next) {
+        // printf("%s\n", list_entry(head, element_t, list)->value);
+        return head;
+    }
+    struct list_head *fast = head;
+    struct list_head *slow = head;
+    while (fast->next && fast->next->next) {
+        fast = fast->next->next;
+        slow = slow->next;
+    }
+    struct list_head *mid = slow->next;
+    slow->next = NULL;
+    /*
+    printf("l: ");
+    print_list(head);
+    printf("r: ");
+    print_list(mid);
+    */
+    struct list_head *left = mergesort(head);
+    struct list_head *right = mergesort(mid);
+    return merge(left, right);
+}
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    if (!head || head->next == head || list_is_singular(head))
+        return;
+    // first unlink head and store it to tmp
+    struct list_head *tmp = head->next;
+    head->prev->next = NULL;
+    head->next = NULL;
+    struct list_head *sorted = mergesort(tmp);
+    // printf("sorting complete! \n");
+    // print_list(sorted);
+    struct list_head *current = sorted;
+    struct list_head *previous = 0;
+    // recover previous link
+    while (current) {
+        previous = current;
+        current = current->next;
+        if (current)
+            current->prev = previous;
+    }
+    // recover head
+    sorted->prev = head;
+    head->next = sorted;
+    head->prev = previous;
+    previous->next = head;
+}
