@@ -214,6 +214,7 @@ bool q_delete_dup(struct list_head *head)
  */
 void q_swap(struct list_head *head)
 {
+    // TODO: when reverse behind swap, something error
     // https://leetcode.com/problems/swap-nodes-in-pairs/
     // three pointers for help change link
     struct list_head *current = head->next, *previous = head, *tmp = NULL;
@@ -227,6 +228,7 @@ void q_swap(struct list_head *head)
         current->prev = previous->prev;
         previous->prev = current;
         tmp->next = current;
+        previous->next->prev = previous;
         // move current to next
         current = previous->next;
     }
