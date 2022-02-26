@@ -111,7 +111,7 @@ bool q_insert_tail(struct list_head *head, char *s)
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
     // if queue is NULL or empty return NULL
-    if (!head || head->next == head)
+    if (!head || list_empty(head))
         return NULL;
     element_t *node = list_first_entry(head, element_t, list);
     if (sp) {
@@ -128,7 +128,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
  */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (!head || head->next == head)
+    if (!head || list_empty(head))
         return NULL;
     element_t *node = list_last_entry(head, element_t, list);
     if (sp) {
@@ -155,7 +155,7 @@ void q_release_element(element_t *e)
  */
 int q_size(struct list_head *head)
 {
-    if (!head || head == head->next)
+    if (!head || list_empty(head))
         return 0;
     int len = 0;
     struct list_head *li;
@@ -175,7 +175,7 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
-    if (!head || head->next == head)
+    if (!head || list_empty(head))
         return false;
     // using fastptr and slowptr to find middle node in list
     struct list_head *fast = head;
@@ -206,7 +206,7 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
-    if (!head || head->next == head)
+    if (!head || list_empty(head))
         return false;
     struct list_head *current = head->next;
     char tag;
@@ -278,7 +278,7 @@ void q_swap(struct list_head *head)
  */
 void q_reverse(struct list_head *head)
 {
-    if (!head || head == head->next || list_is_singular(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
     struct list_head *tmp;
     struct list_head *current = head->next;
@@ -356,7 +356,7 @@ struct list_head *mergesort(struct list_head *head)
  */
 void q_sort(struct list_head *head)
 {
-    if (!head || head->next == head || list_is_singular(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
     // first unlink head and store it to tmp
     struct list_head *tmp = head->next;
