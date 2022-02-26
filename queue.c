@@ -59,7 +59,7 @@ bool q_insert_head(struct list_head *head, char *s)
         return false;
     // allocate space for copy string, if fail free the node and return false
     unsigned int len = strlen(s) + 1;
-    node->value = (char *) malloc(sizeof(char) * len);
+    node->value = malloc(sizeof(char) * len);
     if (!node->value) {
         free(node);
         return false;
@@ -84,7 +84,7 @@ bool q_insert_tail(struct list_head *head, char *s)
     if (!node)
         return false;
     unsigned int len = strlen(s) + 1;
-    node->value = (char *) malloc(sizeof(char) * len);
+    node->value = malloc(sizeof(char) * len);
     if (!node->value) {
         free(node);
         return false;
