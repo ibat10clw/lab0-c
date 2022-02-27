@@ -288,6 +288,10 @@ static bool do_comment_cmd(int argc, char *argv[])
 
     return true;
 }
+bool do_hello(int argc, char *argv[])
+{
+    return (bool) printf("Hello, World\n");
+}
 
 /* Extract integer from text and store at loc */
 bool get_int(char *vname, int *loc)
@@ -412,6 +416,7 @@ void init_cmd()
     ADD_COMMAND(log, " file           | Copy output to file");
     ADD_COMMAND(time, " cmd arg ...    | Time command execution");
     add_cmd("#", do_comment_cmd, " ...            | Display comment");
+    add_cmd("hello", do_hello, "                | Print hello message");
     add_param("simulation", &simulation, "Start/Stop simulation mode", NULL);
     add_param("verbose", &verblevel, "Verbosity level", NULL);
     add_param("error", &err_limit, "Number of errors until exit", NULL);

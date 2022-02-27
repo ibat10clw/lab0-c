@@ -812,7 +812,55 @@ static bool do_show(int argc, char *argv[])
     }
     return show_queue(0);
 }
+static bool q_shuffle(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return false;
+    else if (list_is_singular(head))
+        return true;
+    int len = 0;
+    struct list_head *li;
+    struct list_head newh;
+    newh.next = &newh;
+    newh.prev = &newh;
+    list_for_each (li, head)
+        len++;
+    srand(time(NULL));
+    while (len) {
+        int node_num = (rand() % len) + 1;
+        li = head;
+        do {
+            li = li->next;
+        } while (--node_num);
+        struct list_head *tmp = li;
+        list_del(li);
+        list_add(tmp, &newh);
+        len--;
+    }
+    newh.next->prev = head;
+    newh.prev->next = head;
+    head->next = newh.next;
+    head->prev = newh.prev;
+    return true;
+}
+static bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+    if (!l_meta.l)
+        report(3, "Warning: Try to access null queue");
+    error_check();
 
+    bool ok = true;
+    if (exception_setup(true))
+        ok = q_shuffle(l_meta.l);
+    exception_cancel();
+
+    show_queue(3);
+    return ok && !error_check();
+}
 static void console_init()
 {
     ADD_COMMAND(new, "                | Create new queue");
@@ -838,6 +886,7 @@ static void console_init()
         "                | Remove from head of queue without reporting value.");
     ADD_COMMAND(reverse, "                | Reverse queue");
     ADD_COMMAND(sort, "                | Sort queue in ascending order");
+    ADD_COMMAND(shuffle, "                | Shuffle queue in random order");
     ADD_COMMAND(
         size, " [n]            | Compute queue size n times (default: n == 1)");
     ADD_COMMAND(show, "                | Show queue contents");
