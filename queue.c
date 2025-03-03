@@ -4,6 +4,11 @@
 
 #include "queue.h"
 
+static inline int min(int a, int b)
+{
+    return b ^ ((a ^ b) & -(a < b));
+}
+
 /* Create an empty queue */
 struct list_head *q_new()
 {
@@ -71,13 +76,35 @@ bool q_insert_tail(struct list_head *head, char *s)
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head || list_empty(head))
+        return NULL;
+
+    struct list_head *lh = head->next;
+    element_t *ele = list_entry(lh, element_t, list);
+    list_del_init(lh);
+    if (sp) {
+        size_t sz = min(strlen(ele->value), bufsize - 1);
+        memcpy(sp, ele->value, sz);
+        sp[sz] = '\0';
+    }
+    return ele;
 }
 
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head || list_empty(head))
+        return NULL;
+
+    struct list_head *lt = head->prev;
+    element_t *ele = list_entry(lt, element_t, list);
+    list_del_init(lt);
+    if (sp) {
+        size_t sz = min(strlen(ele->value), bufsize - 1);
+        memcpy(sp, ele->value, sz);
+        sp[sz] = '\0';
+    }
+    return ele;
 }
 
 /* Return number of elements in queue */
