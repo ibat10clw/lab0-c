@@ -147,9 +147,81 @@ void q_reverseK(struct list_head *head, int k)
 {
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
 }
+static inline bool str_cmp_asc(const char *a, const char *b)
+{
+    return strcmp(a, b) <= 0;
+}
+static inline bool str_cmp_dsc(const char *a, const char *b)
+{
+    return strcmp(a, b) >= 0;
+}
 
+struct list_head *merge(struct list_head *l1,
+                        struct list_head *l2,
+                        bool (*cmp)(const char *a, const char *b))
+{
+    struct list_head *head = NULL, **ptr = &head, **node;
+    for (node = NULL; l1 && l2; *node = (*node)->next) {
+        node = cmp(list_entry(l1, element_t, list)->value,
+                   list_entry(l2, element_t, list)->value)
+                   ? &l1
+                   : &l2;
+        *ptr = *node;
+        ptr = &(*ptr)->next;
+    }
+    *ptr = l1 ? l1 : l2;
+    return head;
+}
+
+struct list_head *mergesort(struct list_head *head,
+                            bool (*cmp)(const char *a, const char *b))
+{
+    if (!head->next) {
+        return head;
+    }
+    struct list_head *fast = head;
+    struct list_head *slow = head;
+    while (fast->next && fast->next->next) {
+        fast = fast->next->next;
+        slow = slow->next;
+    }
+    struct list_head *mid = slow->next;
+    slow->next = NULL;
+    struct list_head *left = mergesort(head, cmp);
+    struct list_head *right = mergesort(mid, cmp);
+    return merge(left, right, cmp);
+}
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void q_sort(struct list_head *head, bool descend)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    /*
+     * First unlink list's head and destory circular structure
+     * for detect NULL in merge stage
+     */
+    struct list_head *tmp = head->next;
+    bool (*cmp)(const char *a, const char *b) =
+        descend ? str_cmp_dsc : str_cmp_asc;
+    head->prev->next = NULL;
+    head->next = NULL;
+
+    // Sort the list and ignore prev link in this stage
+    struct list_head *sorted = mergesort(tmp, cmp);
+    // Recover previous link and stop at last node
+    struct list_head *current = sorted;
+    while (current->next) {
+        current->next->prev = current;
+        current = current->next;
+    }
+
+    // Recover circular structure
+    sorted->prev = head;
+    head->next = sorted;
+    head->prev = current;
+    current->next = head;
+}
+
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
