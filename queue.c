@@ -139,10 +139,40 @@ bool q_delete_mid(struct list_head *head)
     return true;
 }
 
+/**
+ * list_next_entry - get the next element in list
+ * @pos:	the type * to cursor
+ * @member:	the name of the list_head within the struct.
+ */
+#define list_next_entry(pos, member) \
+    list_entry((pos)->member.next, typeof(*(pos)), member)
+
 /* Delete all nodes that have duplicate string */
 bool q_delete_dup(struct list_head *head)
 {
+    if (!head || list_is_singular(head) || list_empty(head))
+        return false;
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    struct list_head *cur = head->next;
+    while (cur != head && cur->next != head) {
+        element_t *e1 = list_entry(cur, element_t, list);
+        element_t *e2 = list_next_entry(e1, list);
+        bool flag = 0;
+        while (cur->next != head && !strcmp(e1->value, e2->value)) {
+            list_del(cur->next);
+            free(e2->value);
+            free(e2);
+            flag = 1;
+            e2 = list_next_entry(e1, list);
+        }
+        struct list_head *tmp = cur->next;
+        if (flag) {
+            list_del(cur);
+            free(e1->value);
+            free(e1);
+        }
+        cur = tmp;
+    }
     return true;
 }
 /**
