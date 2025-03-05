@@ -232,11 +232,45 @@ void q_reverse(struct list_head *head)
     head->next = head->prev;
     head->prev = tmp;
 }
-
+void printlist(struct list_head *head)
+{
+    element_t *e;
+    list_for_each_entry (e, head, list) {
+        printf("%s\n", e->value);
+    }
+}
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
 {
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    if (k <= 1 || !head || list_empty(head) || list_is_singular(head))
+        return;
+
+    struct list_head *cur, *tmp;
+    struct list_head *sub_head = head;
+    unsigned int count = 0;
+
+    list_for_each_safe (cur, tmp, head) {
+        count++;
+        if (count == k) {
+            struct list_head sublist;
+            INIT_LIST_HEAD(&sublist);
+            // cur range: [sub_head->next, ..., cur]
+            list_cut_position(&sublist, sub_head, cur);
+
+            q_reverse(&sublist);
+            /*
+             * list_splice() expects the 'head' parameter to be a sentinel node
+             * with no data. This places inserted elements between 'head' and
+             * the first real node. If a data-bearing node is passed instead,
+             * its 'prev' must be used to ensure the insertion happens before
+             * that node.
+             */
+            list_splice(&sublist, tmp->prev);
+            count = 0;
+            sub_head = tmp->prev;
+        }
+    }
 }
 static inline bool str_cmp_asc(const char *a, const char *b)
 {
