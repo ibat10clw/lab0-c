@@ -236,7 +236,7 @@ void printlist(struct list_head *head)
 {
     element_t *e;
     list_for_each_entry (e, head, list) {
-        printf("%s\n", e->value);
+        printf("val: %s\n", e->value);
     }
 }
 /* Reverse the nodes of the list k at a time */
@@ -407,7 +407,33 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    // This function's head is refer to queue_contex_t *current in qtest.c
+    // This function's head is refer to queue_chain_t *chain in qtest.c
     // look the function call q_merge in do_merge
-    return 0;
+    queue_contex_t *cur;
+    bool (*cmp)(const char *a, const char *b) =
+        descend ? str_cmp_dsc : str_cmp_asc;
+    struct list_head *lh = NULL;
+    list_for_each_entry (cur, head, chain) {
+        if (!lh) {
+            lh = cur->q;
+            lh->prev->next = NULL;
+        } else {
+            cur->q->prev->next = NULL;
+            lh->next = merge(lh->next, cur->q->next, cmp);
+            // In do_merge (in q_test.c), after q_merge completes, the program
+            // frees every queue except for the first one in q_chain_t.
+            // Therefore, after merging, we reinitialize the queue head to
+            // prevent the element_t nodes from being accidentally freed.
+            INIT_LIST_HEAD(cur->q);
+        }
+    }
+    struct list_head *tmp = lh->next, *prev = lh;
+    while (tmp) {
+        tmp->prev = prev;
+        prev = tmp;
+        tmp = tmp->next;
+    }
+    lh->prev = prev;
+    prev->next = lh;
+    return q_size(lh);
 }
