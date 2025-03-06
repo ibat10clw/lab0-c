@@ -347,13 +347,39 @@ void q_sort(struct list_head *head, bool descend)
     current->next = head;
 }
 
+/**
+ * list_for_each_prev_safe - iterate over a list backwards safe against removal
+ * of list entry
+ * @pos:	the &struct list_head to use as a loop cursor.
+ * @n:		another &struct list_head to use as temporary storage
+ * @head:	the head for your list.
+ */
+#define list_for_each_prev_safe(pos, n, head) \
+    for (pos = (head)->prev, n = pos->prev; n != (head); pos = n, n = pos->prev)
 
+#define list_for_each_entry_prev_safe(entry, safe, head, member)       \
+    for (entry = list_entry((head)->prev, typeof(*entry), member),     \
+        safe = list_entry(entry->member.prev, typeof(*entry), member); \
+         &entry->member != (head); entry = safe,                       \
+        safe = list_entry(safe->member.prev, typeof(*entry), member))
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
 int q_ascend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    element_t *cur, *tmp;
+    const element_t *min_node = list_last_entry(head, element_t, list);
+    list_for_each_entry_prev_safe(cur, tmp, head, list)
+    {
+        if (strcmp(cur->value, min_node->value) > 0) {
+            list_del(&cur->list);
+            free(cur->value);
+            free(cur);
+        } else {
+            min_node = cur;
+        }
+    }
+    return q_size(head);
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
@@ -361,7 +387,19 @@ int q_ascend(struct list_head *head)
 int q_descend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    element_t *cur, *tmp;
+    const element_t *max_node = list_last_entry(head, element_t, list);
+    list_for_each_entry_prev_safe(cur, tmp, head, list)
+    {
+        if (strcmp(cur->value, max_node->value) < 0) {
+            list_del(&cur->list);
+            free(cur->value);
+            free(cur);
+        } else {
+            max_node = cur;
+        }
+    }
+    return q_size(head);
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
@@ -369,5 +407,7 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
+    // This function's head is refer to queue_contex_t *current in qtest.c
+    // look the function call q_merge in do_merge
     return 0;
 }
