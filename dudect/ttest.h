@@ -1,12 +1,14 @@
 #ifndef DUDECT_TTEST_H
 #define DUDECT_TTEST_H
 
+#include <stdbool.h>
 #include <stdint.h>
-
 typedef struct {
     double mean[2];
     double m2[2];
     double n[2];
+    int64_t *percentiles;
+    bool first;
 } t_context_t;
 
 void t_push(t_context_t *ctx, double x, uint8_t class);

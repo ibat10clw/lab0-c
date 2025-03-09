@@ -45,5 +45,6 @@ void t_init(t_context_t *ctx)
         ctx->m2[class] = 0.0;
         ctx->n[class] = 0.0;
     }
+    ctx->first = true;
     return;
 }
