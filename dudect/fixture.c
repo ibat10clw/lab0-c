@@ -91,17 +91,17 @@ static void update_statistics(const int64_t *exec_times, uint8_t *classes)
  */
 static bool report(void)
 {
-    double max_t = fabs(t_compute(t));
     double number_traces_max_t = t->n[0] + t->n[1];
-    double max_tau = max_t / sqrt(number_traces_max_t);
-
     printf("\033[A\033[2K");
-    printf("meas: %7.2lf M, ", (number_traces_max_t / 1e6));
     if (number_traces_max_t < ENOUGH_MEASURE) {
         printf("not enough measurements (%.0f still to go).\n",
                ENOUGH_MEASURE - number_traces_max_t);
         return false;
     }
+    double max_t = fabs(t_compute(t));
+    double max_tau = max_t / sqrt(number_traces_max_t);
+
+    printf("meas: %7.2lf M, ", (number_traces_max_t / 1e6));
 
     /* max_t: the t statistic value
      * max_tau: a t value normalized by sqrt(number of measurements).
