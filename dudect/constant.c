@@ -77,88 +77,59 @@ bool measure(int64_t *before_ticks,
     assert(mode == DUT(insert_head) || mode == DUT(insert_tail) ||
            mode == DUT(remove_head) || mode == DUT(remove_tail));
 
-    switch (mode) {
-    case DUT(insert_head):
-        for (size_t i = 0; i < N_MEASURES; i++) {
-            char *s = get_random_string();
-            dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000);
-            int before_size = q_size(l);
-            before_ticks[i] = cpucycles();
-            dut_insert_head(s, 1);
-            after_ticks[i] = cpucycles();
-            int after_size = q_size(l);
-            dut_free();
-            if (before_size != after_size - 1)
-                return false;
+    for (size_t i = 0; i < N_MEASURES; ++i) {
+        char *s, tmp[32] = {0};
+        char *sp = NULL;
+        int buf_sz = 0;
+        uint16_t rn = *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000;
+        // If the random number is zero, use the fixed string "FIXEDSTR" as
+        // input. Otherwise, generate a random string and:
+        // - Set `sp` to NULL if the random number is odd, or assign `tmp`
+        // buffer otherwise.
+        // - Set the buffer size `buf_sz` to a value between 0 and 7 based on
+        // the random number.
+        if (rn == 0) {
+            s = "FIXEDSTR";
+        } else {
+            s = get_random_string();
+            sp = tmp;
+            buf_sz = (rn % 8) + 1;
         }
-        break;
-    case DUT(insert_tail):
-        for (size_t i = 0; i < N_MEASURES; i++) {
-            char *s = get_random_string();
-            dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000);
-            int before_size = q_size(l);
+        dut_new();
+        // Avoid testing remove operations on an empty queue
+        // by ensuring 'rn' is non-zero (at least one element present)
+        if (mode == DUT_remove_head || mode == DUT_remove_tail)
+            rn++;
+        dut_insert_head(get_random_string(), rn);
+        bool (*insert_func)(struct list_head *, char *) = NULL;
+        element_t *(*remove_func)(struct list_head *, char *, size_t) = NULL;
+
+        if (mode == DUT_insert_head || mode == DUT_insert_tail)
+            insert_func =
+                mode == DUT_insert_head ? q_insert_head : q_insert_tail;
+        else if (mode == DUT_remove_head || mode == DUT_remove_tail)
+            remove_func =
+                mode == DUT_remove_head ? q_remove_head : q_remove_tail;
+
+        int before_size = q_size(l);
+        if (insert_func) {
             before_ticks[i] = cpucycles();
-            dut_insert_tail(s, 1);
+            insert_func(l, s);
             after_ticks[i] = cpucycles();
-            int after_size = q_size(l);
-            dut_free();
-            if (before_size != after_size - 1)
-                return false;
-        }
-        break;
-    case DUT(remove_head):
-        for (size_t i = 0; i < N_MEASURES; i++) {
-            dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000 + 1);
-            int before_size = q_size(l);
+        } else {
             before_ticks[i] = cpucycles();
-            element_t *e = q_remove_head(l, NULL, 0);
+            element_t *e = remove_func(l, sp, buf_sz);
             after_ticks[i] = cpucycles();
-            int after_size = q_size(l);
             if (e)
                 q_release_element(e);
-            dut_free();
-            if (before_size != after_size + 1)
-                return false;
         }
-        break;
-    case DUT(remove_tail):
-        for (size_t i = 0; i < N_MEASURES; i++) {
-            dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000 + 1);
-            int before_size = q_size(l);
-            before_ticks[i] = cpucycles();
-            element_t *e = q_remove_tail(l, NULL, 0);
-            after_ticks[i] = cpucycles();
-            int after_size = q_size(l);
-            if (e)
-                q_release_element(e);
-            dut_free();
-            if (before_size != after_size + 1)
-                return false;
-        }
-        break;
-    default:
-        for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
-            dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000);
-            before_ticks[i] = cpucycles();
-            dut_size(1);
-            after_ticks[i] = cpucycles();
-            dut_free();
-        }
+        int after_size = q_size(l);
+        dut_free();
+
+        if (insert_func && before_size != after_size - 1)
+            return false;
+        else if (remove_func && before_size != after_size + 1)
+            return false;
     }
     return true;
 }
