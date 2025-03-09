@@ -511,7 +511,12 @@ static bool do_dedup(int argc, char *argv[])
     q_show(3);
     return ok && !error_check();
 }
-
+extern void q_shuffle(struct list_head *);
+static bool do_shuffle(int argc, char *argv[])
+{
+    q_shuffle(current->q);
+    return true;
+}
 static bool do_reverse(int argc, char *argv[])
 {
     if (argc != 1) {
@@ -1056,6 +1061,7 @@ static bool do_next(int argc, char *argv[])
     return q_show(0);
 }
 
+
 static void console_init()
 {
     ADD_COMMAND(new, "Create new queue", "");
@@ -1086,6 +1092,7 @@ static void console_init()
     ADD_COMMAND(dedup, "Delete all nodes that have duplicate string", "");
     ADD_COMMAND(merge, "Merge all the queues into one sorted queue", "");
     ADD_COMMAND(swap, "Swap every two adjacent nodes in queue", "");
+    ADD_COMMAND(shuffle, "Shuffle nodes in queue randomly", "");
     ADD_COMMAND(ascend,
                 "Remove every node which has a node with a strictly less "
                 "value anywhere to the right side of it",

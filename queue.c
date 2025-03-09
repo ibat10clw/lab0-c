@@ -1,8 +1,8 @@
+#include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "queue.h"
+#include "random.h"
 
 static inline int min(int a, int b)
 {
@@ -436,4 +436,42 @@ int q_merge(struct list_head *head, bool descend)
     lh->prev = prev;
     prev->next = lh;
     return q_size(lh);
+}
+
+
+void q_shuffle(struct list_head *head)
+{
+    int sz = q_size(head);
+    if (sz <= 1)
+        return;
+
+    // Add all pointers to an array
+    struct list_head **nodes =
+        (struct list_head **) malloc(sizeof(struct list_head *) * sz);
+    if (!nodes)
+        return;
+    struct list_head *cur = head->next;
+    for (int i = 0; i < sz; i++) {
+        nodes[i] = cur;
+        cur = cur->next;
+    }
+
+    // Fisher–Yates Shuffle(swap pointer)
+    uint8_t buf[4] = {0};
+    for (int i = sz - 1; i > 0; i--) {
+        randombytes(buf, sizeof(buf));
+        int j = *(uint32_t *) buf % (i + 1);
+        if (i != j) {
+            struct list_head *tmp = nodes[i];
+            nodes[i] = nodes[j];
+            nodes[j] = tmp;
+        }
+    }
+
+    // Reconstruct the list from pointer array
+    INIT_LIST_HEAD(head);
+    for (int i = 0; i < sz; i++) {
+        list_add_tail(nodes[i], head);
+    }
+    free(nodes);
 }
