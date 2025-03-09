@@ -5,12 +5,12 @@
 #include <stdint.h>
 
 /* Number of measurements per test */
-#define N_MEASURES 150
+#define N_MEASURES 1000
 
 /* Allow random number range from 0 to 65535 */
 #define CHUNK_SIZE 2
 
-#define DROP_SIZE 20
+#define DROP_SIZE 10
 
 #define DUT_FUNCS  \
     _(insert_head) \
