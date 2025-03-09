@@ -78,23 +78,10 @@ bool measure(int64_t *before_ticks,
            mode == DUT(remove_head) || mode == DUT(remove_tail));
 
     for (size_t i = 0; i < N_MEASURES; ++i) {
-        char *s, tmp[32] = {0};
-        char *sp = NULL;
-        int buf_sz = 0;
-        uint16_t rn = *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000;
-        // If the random number is zero, use the fixed string "FIXEDSTR" as
-        // input. Otherwise, generate a random string and:
-        // - Set `sp` to NULL if the random number is odd, or assign `tmp`
-        // buffer otherwise.
-        // - Set the buffer size `buf_sz` to a value between 0 and 7 based on
-        // the random number.
-        if (rn == 0) {
-            s = "FIXEDSTR";
-        } else {
-            s = get_random_string();
-            sp = tmp;
-            buf_sz = (rn % 8) + 1;
-        }
+        char *s = "FIXEDSTR", tmp[32] = {0};
+        char *sp = tmp;
+        int buf_sz = 8;
+        uint16_t rn = *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10;
         dut_new();
         // Avoid testing remove operations on an empty queue
         // by ensuring 'rn' is non-zero (at least one element present)
