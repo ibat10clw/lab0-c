@@ -8,7 +8,7 @@ fmtscan
 core*
 .cmd_history
 .out
-
+*.txt
 # ctags files
 TAGS
 .TAGS

@@ -75,6 +75,8 @@ static int string_length = MAXSTRING;
 
 static int descend = 0;
 
+static int prng = 0;
+
 #define MIN_RANDSTR_LEN 5
 #define MAX_RANDSTR_LEN 10
 static const char charset[] = "abcdefghijklmnopqrstuvwxyz";
@@ -173,7 +175,14 @@ static void fill_rand_string(char *buf, size_t buf_size)
         len = rand() % buf_size;
 
     uint64_t randstr_buf_64[MAX_RANDSTR_LEN] = {0};
-    randombytes((uint8_t *) randstr_buf_64, len * sizeof(uint64_t));
+    switch (prng) {
+    case 1:
+        // TODO: implement a prng use xor shift
+        break;
+    case 0:
+    default:
+        randombytes((uint8_t *) randstr_buf_64, len * sizeof(uint64_t));
+    }
     for (size_t n = 0; n < len; n++)
         buf[n] = charset[randstr_buf_64[n] % (sizeof(charset) - 1)];
 
@@ -1111,6 +1120,9 @@ static void console_init()
               "Number of times allow queue operations to return false", NULL);
     add_param("descend", &descend,
               "Sort and merge queue in ascending/descending order", NULL);
+    add_param("prng", &prng,
+              "Select the random number generator [0:/dev/random, 1:xor]",
+              NULL);
 }
 
 /* Signal handlers */
