@@ -177,7 +177,7 @@ static void fill_rand_string(char *buf, size_t buf_size)
     uint64_t randstr_buf_64[MAX_RANDSTR_LEN] = {0};
     switch (prng) {
     case 1:
-        // TODO: implement a prng use xor shift
+        xor_rng((uint8_t *) randstr_buf_64, buf_size * sizeof(uint64_t));
         break;
     case 0:
     default:

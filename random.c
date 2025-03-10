@@ -291,3 +291,35 @@ int randombytes(uint8_t *buf, size_t n)
 #error "randombytes(...) is not supported on this platform"
 #endif
 }
+
+static void xorshift(u_int64_t *val)
+{
+    *val ^= *val << 13;
+    *val ^= *val >> 7;
+    *val ^= *val << 17;
+}
+/*
+ * Apply xorshift to get random bytes, and fill it to buffer
+ * Xorshift RNGs paper: https://www.jstatsoft.org/article/view/v008i14
+ */
+void xor_rng(uint8_t *buf, size_t n)
+{
+    static struct {
+        u_int64_t x;
+        int cnt;
+    } state = {.x = 0, .cnt = 7};  // each state x can generate 8 bytes data
+
+    if (__glibc_unlikely(state.x == 0)) {
+        int ret = getrandom(&state.x, sizeof(state.x), 0);
+        assert(ret);
+    }
+    size_t offset = 0;
+    while (n--) {
+        if (state.cnt == 0) {
+            xorshift(&state.x);
+            state.cnt = 7;
+        }
+        buf[offset++] = (state.x >> (state.cnt << 3)) & 0xFF;
+        state.cnt -= 1;
+    }
+}
