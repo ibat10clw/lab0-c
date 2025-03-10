@@ -47,5 +47,5 @@ static inline uintptr_t random_shuffle(uintptr_t x)
 
     return x;
 }
-
+void xor_rng(uint8_t *buf, size_t n);
 #endif
