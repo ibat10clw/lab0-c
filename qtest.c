@@ -75,7 +75,7 @@ static int string_length = MAXSTRING;
 
 static int descend = 0;
 
-static int prng = 0;
+int prng = 0;
 
 #define MIN_RANDSTR_LEN 5
 #define MAX_RANDSTR_LEN 10

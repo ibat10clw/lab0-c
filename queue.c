@@ -4,6 +4,7 @@
 #include <string.h>
 #include "random.h"
 
+extern int prng;
 static inline int min(int a, int b)
 {
     return b ^ ((a ^ b) & -(a < b));
@@ -459,7 +460,10 @@ void q_shuffle(struct list_head *head)
     // Fisher–Yates Shuffle(swap pointer)
     uint8_t buf[4] = {0};
     for (int i = sz - 1; i > 0; i--) {
-        randombytes(buf, sizeof(buf));
+        if (prng == 0)
+            randombytes(buf, sizeof(buf));
+        else
+            xor_rng(buf, sizeof(buf));
         int j = *(uint32_t *) buf % (i + 1);
         if (i != j) {
             struct list_head *tmp = nodes[i];
