@@ -9,6 +9,7 @@ core*
 .cmd_history
 .out
 *.txt
+*.png
 # ctags files
 TAGS
 .TAGS
