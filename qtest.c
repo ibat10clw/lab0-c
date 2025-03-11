@@ -524,6 +524,7 @@ extern void q_shuffle(struct list_head *);
 static bool do_shuffle(int argc, char *argv[])
 {
     q_shuffle(current->q);
+    q_show(3);
     return true;
 }
 static bool do_reverse(int argc, char *argv[])
@@ -1121,7 +1122,7 @@ static void console_init()
     add_param("descend", &descend,
               "Sort and merge queue in ascending/descending order", NULL);
     add_param("prng", &prng,
-              "Select the random number generator [0:/dev/random, 1:xor]",
+              "Select the random number generator [0:/dev/urandom, 1:xor]",
               NULL);
 }
 
